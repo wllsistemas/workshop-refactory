@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Imposto</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-6.5.2-web/css/all.min.css">
+</head>
+
+<body>
+    <div class="container is-fluid">
+        <p class="has-text-centered has-text-link subtitle is-3">
+            Calculadora de Imposto
+        </p>
+
+        <div class="columns is-gapless is-multiline is-mobile">
+            <div class="column">
+                <div class="field px-1 pb-2">
+                    <label class="label">Destino da Operação</label>
+                    <div class="select is-link">
+                        <select id="destino_operacao">
+                            <option value="0">Consumidor Final</option>
+                            <option value="1">Industrialização</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Alíquota ICMS *</label>
+                    <div class="control has-icons-right">
+                        <input class="input is-link aliquota_icms" type="text" value="0,00">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns is-gapless is-multiline is-mobile">
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Qtde Pedido *</label>
+                    <div class="control has-icons-right">
+                        <input class="input is-link qtde_pedido" type="text" value="0">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Valor Unitário *</label>
+                    <div class="control has-icons-right">
+                        <input class="input is-link valor_unitario" type="text" value="0,00">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns is-gapless is-multiline is-mobile">
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Valor Frete</label>
+                    <div class="control">
+                        <input class="input is-link valor_frete" type="text" value="0,00">
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Valor Seguro</label>
+                    <div class="control">
+                        <input class="input is-link valor_seguro" type="text" value="0,00">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns is-gapless is-multiline is-mobile">
+            <div class="column">
+                <div class="field px-1">
+                    <label class="label">Valor Despesas Acessórias</label>
+                    <div class="control">
+                        <input class="input is-link valor_despesas_acessorias" type="text" value="0,00">
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field px-1">
+
+                </div>
+            </div>
+        </div>
+
+        <button class="button is-link is-fullwidth btn_calcular" onclick="calcular()">
+            Cálcular Imposto
+        </button><br>
+        <button class="button is-danger is-fullwidth btn_limpar" onclick="limpar()">
+            Limpar Cálculo
+        </button>
+        <hr>
+        <div class="card">
+            <div class="card-content">
+                <div class="content is-family-monospace has-text-danger resultado">
+                    Não existem resultados !
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function calcular() {
+            let icms = document.querySelector('.aliquota_icms').value;
+            let qtde = document.querySelector('.qtde_pedido').value;
+            let val_unit = document.querySelector('.valor_unitario').value;
+
+            let erro = false;
+            let regex = new RegExp(/[\d\.\,]+/);
+            let result = regex.exec(icms);
+            if (result == null || parseFloat(result[0]) <= 0) {
+                document.querySelector('.aliquota_icms').classList.add('has-background-danger-50');
+                erro = true;
+            } else {
+                document.querySelector('.aliquota_icms').classList.remove('has-background-danger-50');
+            }
+
+            result = regex.exec(qtde);
+            if (result == null || parseFloat(result[0]) <= 0) {
+                document.querySelector('.qtde_pedido').classList.add('has-background-danger-50');
+                erro = true;
+            } else {
+                document.querySelector('.qtde_pedido').classList.remove('has-background-danger-50');
+            }
+
+            result = regex.exec(val_unit);
+            if (result == null || parseFloat(result[0]) <= 0) {
+                document.querySelector('.valor_unitario').classList.add('has-background-danger-50');
+                erro = true;
+            } else {
+                document.querySelector('.valor_unitario').classList.remove('has-background-danger-50');
+            }
+
+            if (erro === false) {
+                calcularImposto();
+            }
+        }
+
+        function calcularImposto() {
+            let valor_produto = (limparValor(document.querySelector('.qtde_pedido').value) *
+                limparValor(document.querySelector('.valor_unitario').value));
+
+            let base_calculo = (valor_produto + limparValor(document.querySelector('.valor_seguro').value) +
+                limparValor(document.querySelector('.valor_frete').value) +
+                limparValor(document.querySelector('.valor_despesas_acessorias').value));
+
+            let valor_pis = (base_calculo * 0.65) / 100;
+            let valor_cofins = (base_calculo * 3.00) / 100;
+            let valor_ipi = (base_calculo * 0.78) / 100;
+
+            let valor_icms = 0;
+            if (document.getElementById('destino_operacao').value == '0') {
+                base_calculo_icms = (base_calculo + valor_ipi);
+                valor_icms = (base_calculo_icms * limparValor(document.querySelector('.aliquota_icms').value)) / 100;
+            } else {
+                base_calculo_icms = base_calculo;
+                valor_icms = (base_calculo * limparValor(document.querySelector('.aliquota_icms').value)) / 100;
+            }
+
+            document.querySelector('.resultado').innerHTML = 'Total do Produto: R$ ' + valor_produto.toFixed(2) + '<br>';
+            document.querySelector('.resultado').innerHTML += 'Base de Cálculo:  R$ ' + base_calculo.toFixed(2) + '<br>';
+            document.querySelector('.resultado').innerHTML += 'Base de Cálculo ICMS:  R$ ' + base_calculo_icms.toFixed(2) + '<br><br>';
+            document.querySelector('.resultado').innerHTML += 'Total de ICMS: R$ ' + valor_icms.toFixed(2) + '<br>';
+            document.querySelector('.resultado').innerHTML += 'Total de PIS: R$ ' + valor_pis.toFixed(2) + '<br>';
+            document.querySelector('.resultado').innerHTML += 'Total de COFINS: R$ ' + valor_cofins.toFixed(2) + '<br>';
+            document.querySelector('.resultado').innerHTML += 'Total de IPI: R$ ' + valor_ipi.toFixed(2);
+        }
+
+        function limparValor(valor) {
+            valor = valor.replace(/\./g, "");
+            valor = valor.replace(/\,/g, ".");
+            return parseFloat(valor);
+        }
+
+        function limpar() {
+            document.querySelector('.resultado').innerHTML = 'Não existem resultados !';
+            document.getElementById('destino_operacao').value = 0;
+            document.querySelector('.aliquota_icms').value = '0,00';
+            document.querySelector('.qtde_pedido').value = '0,00';
+            document.querySelector('.valor_unitario').value = '0,00';
+            document.querySelector('.valor_frete').value = '0,00';
+            document.querySelector('.valor_seguro').value = '0,00';
+            document.querySelector('.valor_despesas_acessorias').value = '0,00';
+            document.querySelector('.aliquota_icms').classList.remove('has-background-danger-50');
+            document.querySelector('.qtde_pedido').classList.remove('has-background-danger-50');
+            document.querySelector('.valor_unitario').classList.remove('has-background-danger-50');
+        }
+    </script>
+</body>
+
+</html>
